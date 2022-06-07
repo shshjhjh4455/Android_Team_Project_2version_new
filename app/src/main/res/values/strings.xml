@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">Android_Team_Project_2</string>
+    <string name="day0_name">"일"</string>
+    <string name="day1_name">"월"</string>
+    <string name="day2_name">"화"</string>
+    <string name="day3_name">"수"</string>
+    <string name="day4_name">"목"</string>
+    <string name="day5_name">"금"</string>
+    <string name="day6_name">"토"</string>
+    <string name="action_week">주</string>
+    <string name="action_month">월</string>
+    <string name="title">제목</string>
+    <string name="map_hint">000.00000 / 000.00000</string>
+    <string name="schedule_hint">Today Schedule!</string>
+    <string name="schedule_memo">메모</string>
+    <string name="search">찾기</string>
+    <string name="save">저장</string>
+    <string name="cancel">취소</string>
+    <string name="delete">삭제</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

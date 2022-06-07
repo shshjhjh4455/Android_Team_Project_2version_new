@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_month"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:id="@+id/day_name"
+        android:layout_width="match_parent"
+        android:layout_height="20dp">
+
+        <TextView
+            android:id="@+id/day_0"
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            android:layout_weight="1"
+            android:background="#20C308"
+            android:gravity="center"
+            android:text="@string/day0_name" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            android:layout_weight="1"
+            android:background="#20C308"
+            android:gravity="center"
+            android:text="@string/day1_name" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            android:layout_weight="1"
+            android:background="#20C308"
+            android:gravity="center"
+            android:text="@string/day2_name" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            android:layout_weight="1"
+            android:background="#20C308"
+            android:gravity="center"
+            android:text="@string/day3_name" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            android:layout_weight="1"
+            android:background="#20C308"
+            android:gravity="center"
+            android:text="@string/day4_name" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            android:layout_weight="1"
+            android:background="#20C308"
+            android:gravity="center"
+            android:text="@string/day5_name" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            android:layout_weight="1"
+            android:background="#20C308"
+            android:gravity="center"
+            android:text="@string/day6_name" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/tv_ll"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/floatingMonth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="15dp"
+            android:layout_gravity="bottom|right|end"
+            android:clickable="true"
+            app:srcCompat="@android:drawable/ic_input_add"
+            android:onClick="fClick"
+            />
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/vpPager1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
+    </FrameLayout>
+
+</LinearLayout>
+
