@@ -17,10 +17,10 @@ import java.util.Calendar;
 
 public class HourViewAdapter extends BaseAdapter {
 
-    private Context mContext;
-    private int mResource;
-    private ArrayList<My_date_hour> my_date_hours;
-    private Activity mActivity;
+    private final Context mContext;
+    private final int mResource;
+    private final ArrayList<My_date_hour> my_date_hours;
+    private final Activity mActivity;
     MyDBHelper myDBHelper;
     int year, month, date, xdate, dow, fmonth;
 
@@ -64,6 +64,7 @@ public class HourViewAdapter extends BaseAdapter {
         myDBHelper = new MyDBHelper(convertView.getContext());
         Cursor cursor;
         cursor = myDBHelper.searchMonth(year+"."+month);
+        //해당 연 월에 맞는 데이터를 검색해 커서에 저장
 
         ArrayList<My_date_week> My_week_grid = new ArrayList<>();
 
@@ -100,12 +101,6 @@ public class HourViewAdapter extends BaseAdapter {
             }
         }
 
-        Display display = mActivity.getWindowManager().getDefaultDisplay();
-        DisplayMetrics metrics = new DisplayMetrics();
-        display.getRealMetrics(metrics);
-        int width = metrics.widthPixels;
-        int height = metrics.heightPixels;
-
         if ((my_date_hours.get(position).hour) > -1)
             tv_date.setText(my_date_hours.get(position).hour + "");
         else
@@ -114,18 +109,26 @@ public class HourViewAdapter extends BaseAdapter {
         while (cursor.moveToNext()) {
             if ((my_date_hours.get(position).hour) > -1)
                 break;
+            //현재 포지션에 저장된 시간이 0이상인 경우 시간을 표기하는 리스트뷰 이기 때문에 break
             String Date = cursor.getString(2);
             String Time = cursor.getString(3);
             if(Date.equals(year + "." + month + "." + My_week_grid.get(position%7).date) && Time.equals(position/7+""))
                 tv_date.setText(cursor.getString(1));
+            //날짜와 시간이 현재 뷰에 해당하는 날짜와 시간과 같으면 일정의 제목을 텍스트로 설정
         }
+
+        Display display = mActivity.getWindowManager().getDefaultDisplay();
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getRealMetrics(metrics);
+        int width = metrics.widthPixels;
+        int height = metrics.heightPixels;
 
         if (mActivity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             tv_date.setHeight(width / 25 * 24 / 7);
         } else if (mActivity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             tv_date.setHeight(height / 25 * 24 / 7);
         }
-
+        //주간 달력의 경우 일정이 두개이상 나올 수 없기 때문에 이전 버전에서 높이의 변화는 없다
         return convertView;
     }
 }

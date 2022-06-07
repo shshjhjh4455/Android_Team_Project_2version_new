@@ -2,7 +2,6 @@ package com.example.android_team_project_2;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -213,53 +212,93 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @SuppressLint("NonConstantResourceId")
+    //일정추가 메뉴 클릭시 실행
     public void fClick(View view) {
         myDBHelper = new MyDBHelper(this);
         CursorPoint = new int[300];
         switch (view.getId()) {
+            //월간달력에서 클릭시
             case R.id.floatingMonth:
                 Intent intent_month = new Intent(this, ScheduleActivity.class);
-
+                //월간달력에서 실행해 일정추가 메뉴가 종료됐을 때 일정추가 메뉴를 실행했던 시점의 화면으로 돌아가기 위해 정보를 미리 저장
                 intent_month.putExtra("type", "month");
                 intent_month.putExtra("Month_Position", MonthPoint);
-
+                //데이터 베이스에 정보가 없을 시 이전 화면의 정보만 저장 후 액티비티 실행
                 if (myDBHelper == null)
                     startActivity(intent_month);
-
-                Cursor cursor = myDBHelper.getAllUsersBySQL();
-
-                StringBuffer buffer = new StringBuffer();
+                //그게 아니라면 커서에 데이터 베이스의 모든 값 가져오기
+                Cursor cursor = myDBHelper.getAllUsersByMethod();
+                //아이템의 개수를 파악하기 위한 커서키와 아이템의 위치를 저장하기 위한 데이트키 생성
                 int cursor_key = 0, date_key = 0;
                 while (cursor.moveToNext()) {
                     if (cursor.getString(2).equals(ClickPoint)) {
-                        buffer.append(cursor.getString(2));
                         CursorPoint[cursor_key++] = date_key;
+                        //미리 생성해둔 배열의 커서키 위치에 데이트키 저장
                     }
                     date_key++;
                 }
+
+                String[] CursorDate = new String[cursor_key];
+                for (int i = 0; i < cursor_key; i++) {
+                    cursor.moveToPosition(CursorPoint[i]);
+                    CursorDate[i] = cursor.getString(1);
+                    //아이템에서 사용할 제목만 배열으로 저장
+                }
+
+                //아이템의 개수가 2개 이상일 때
                 if (cursor_key > 1) {
-                    String[] CursorDate = new String[cursor_key];
-                    for (int i = 0; i < cursor_key; i++) {
-                        cursor.moveToPosition(CursorPoint[i]);
-                        CursorDate[i] = cursor.getString(1);
-                    }
-
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
+                    //다이얼로그 생성
                     builder.setTitle(ClickPoint);
-
+                    //타이틀은 클릭한 날짜로 설정
                     builder.setItems(CursorDate, (dialog, pos) -> {
                         intent_month.putExtra("selected", CursorPoint[pos]);
-
+                        //제목을 저장해둔 배열을 통해 다이얼로그에 아이템 생성 후 클릭한 아이템의 제목을 저장한 후 액티비티 실행 하도록 작성
                         startActivity(intent_month);
                     });
+                    builder.setPositiveButton("NEW", (dialog, id) -> {
+                        startActivity(intent_month);
+                        //기존의 아이템이 있어도 새로운 일정을 추가할 수 있도록 작성
+                    });
+                    builder.setNegativeButton("Cancel", null);
+                    //Cancel 클릭시 다이얼로그 종료
                     AlertDialog alertDialog = builder.create();
                     alertDialog.show();
-                } else if (cursor_key == 1) {
-                    intent_month.putExtra("selected", CursorPoint[0]);
-                    startActivity(intent_month);
-                } else
-                    startActivity(intent_month);
+                    //다이얼로그 생성 후 화면에 출력
+                }
+
+                else if (cursor_key == 1) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    //다이얼로그 생성
+                    builder.setTitle(ClickPoint);
+                    //타이틀은 클릭한 날짜로 설정
+                    builder.setItems(CursorDate, (dialog, pos) -> {
+                        intent_month.putExtra("selected", CursorPoint[pos]);
+                        //제목을 저장해둔 배열을 통해 다이얼로그에 아이템 생성 후 클릭한 아이템의 위치를 저장한 후 액티비티 실행 하도록 작성
+                        startActivity(intent_month);
+                    });
+                    builder.setPositiveButton("NEW", (dialog, id) -> {
+                        startActivity(intent_month);
+                        //기존의 아이템이 있어도 새로운 일정을 추가할 수 있도록 작성
+                    });
+                    builder.setNegativeButton("Cancel", null);
+                    //Cancel 클릭시 다이얼로그 종료
+                    AlertDialog alertDialog = builder.create();
+                    alertDialog.show();
+                    //다이얼로그 생성 후 화면에 출력
+                }
+                else {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    //다이얼로그 생성
+                    builder.setTitle(ClickPoint);
+                    //타이틀은 클릭한 날짜로 설정
+                    builder.setPositiveButton("NEW", (dialog, id) -> startActivity(intent_month));
+                    builder.setNegativeButton("Cancel", null);
+                    //Cancel 클릭시 다이얼로그 종료
+                    AlertDialog alertDialog = builder.create();
+                    alertDialog.show();
+                    //다이얼로그 생성 후 화면에 출력
+                }
                 break;
 
             case R.id.floatingWeek:
@@ -273,22 +312,56 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(intent_week);
 
 
-                cursor = myDBHelper.getAllUsersBySQL();
+                cursor = myDBHelper.getAllUsersByMethod();
 
                 int time_key = 0, time_count = 0;
+                int[] intent_time = new int[1];
+                String[] CursorTime = new String[1];
 
                 while (cursor.moveToNext()) {
                     if(cursor.getString(2).equals(ClickPoint) && cursor.getString(3).equals(WeekFragment.Clicktime+"")) {
-                        intent_week.putExtra("selected", time_count);
-                        startActivity(intent_week);
+                        CursorTime[0] = cursor.getString(1);
+                        //배열에 제목 저장
                         time_key ++;
+                        intent_time[0] = time_count;
                         break;
                     }
                     time_count ++;
                 }
 
-                if(time_key == 0)
-                    startActivity(intent_week);
+                if (time_key != 0) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    //다이얼로그 생성
+                    builder.setTitle(ClickPoint);
+                    //타이틀은 클릭한 날짜로 설정
+                    builder.setItems(CursorTime, (dialog, pos) -> {
+                        intent_week.putExtra("selected", intent_time[0]);
+                        //제목을 저장해둔 배열을 통해 다이얼로그에 아이템 생성 후 클릭한 아이템의 위치를 저장한 후 액티비티 실행 하도록 작성
+                        startActivity(intent_week);
+                    });
+                    builder.setPositiveButton("NEW", (dialog, id) -> {
+                        startActivity(intent_week);
+                        //기존의 아이템이 있어도 새로운 일정을 추가할 수 있도록 작성
+                    });
+                    builder.setNegativeButton("Cancel", null);
+                    //Cancel 클릭시 다이얼로그 종료
+                    AlertDialog alertDialog = builder.create();
+                    alertDialog.show();
+                    //다이얼로그 생성 후 화면에 출력
+                }
+
+                else {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    //다이얼로그 생성
+                    builder.setTitle(ClickPoint);
+                    //타이틀은 클릭한 날짜로 설정
+                    builder.setPositiveButton("NEW", (dialog, id) -> startActivity(intent_week));
+                    builder.setNegativeButton("Cancel", null);
+                    //Cancel 클릭시 다이얼로그 종료
+                    AlertDialog alertDialog = builder.create();
+                    alertDialog.show();
+                    //다이얼로그 생성 후 화면에 출력
+                }
                 break;
         }
     }

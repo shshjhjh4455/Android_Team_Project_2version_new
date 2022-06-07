@@ -76,24 +76,20 @@ public class MonthFragment extends Fragment {
 
         gridView.setAdapter(adapter);
 
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                Activity activity = getActivity();
-                if (selectedView != null) {
-                    selectedView.findViewById(R.id.month_textView).setBackgroundColor(Color.WHITE);
-                }
-
-                if (position >= dow - 1 && position < lastdate + dow - 1) {
-                    Toast.makeText(activity, year + "." + month + "." + (position - dow + 2), Toast.LENGTH_SHORT).show();
-                    view.findViewById(R.id.month_textView).setBackgroundColor(Color.CYAN);
-                    MainActivity.ClickPoint = year + "." + month + "." + (position - dow + 2);
-                } else {
-                    MainActivity.ClickPoint = "";
-                    return;
-                }
-                selectedView = view;
+        gridView.setOnItemClickListener((adapterView, view, position, id) -> {
+            Activity activity = getActivity();
+            if (selectedView != null) {
+                selectedView.findViewById(R.id.month_textView).setBackgroundColor(Color.WHITE);
             }
+            if (position >= dow - 1 && position < lastdate + dow - 1) {
+                Toast.makeText(activity, year + "." + month + "." + (position - dow + 2), Toast.LENGTH_SHORT).show();
+                view.findViewById(R.id.month_textView).setBackgroundColor(Color.CYAN);
+                MainActivity.ClickPoint = year + "." + month + "." + (position - dow + 2);
+            } else {
+                MainActivity.ClickPoint = "";
+                return;
+            }
+            selectedView = view;
         });
         return rootView;
     }

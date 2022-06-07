@@ -20,10 +20,10 @@ import java.util.Calendar;
 
 public class MonthViewAdapter extends BaseAdapter {
 
-    private Context mContext;
-    private int mResource;
-    private ArrayList<My_date_month> my_date_months;
-    private Activity mActivity;
+    private final Context mContext;
+    private final int mResource;
+    private final ArrayList<My_date_month> my_date_months;
+    private final Activity mActivity;
     private int check = 0;
     MyDBHelper myDBHelper;
 
@@ -64,7 +64,6 @@ public class MonthViewAdapter extends BaseAdapter {
             check = 1;
         else if (check == 1 && my_date_months.get(position).date == 1)
             check = 0;
-
         if (position == 0 && my_date_months.get(position).date == 1)
             check = 1;
 
@@ -78,12 +77,15 @@ public class MonthViewAdapter extends BaseAdapter {
         myDBHelper = new MyDBHelper(convertView.getContext());
         Cursor cursor;
         cursor = myDBHelper.searchMonth(year + "." + month);
+        //해당 연 월에 맞는 데이터를 검색해 커서에 저장
 
         int cursorc = 0;
 
         while (cursor.moveToNext()) {
             if (check == 0)
                 break;
+            //check == 0인 경우는 해당 월이 아닌 이전달과 다음달의 정보를 보여주는 것이기에 break
+
             String Date = cursor.getString(2);
             if (Date.equals(year + "." + month + "." + my_date_months.get(position).date)) {
                 if (cursorc == 0) {
@@ -101,6 +103,8 @@ public class MonthViewAdapter extends BaseAdapter {
                     break;
                 }
             }
+            //아이템이 나올 때 마다 각각 순서에 맞는 텍스트뷰 위치에 설정하고 Visibility 를 VISIBLE 으로 설정
+            //-> 초기상태는 INVISIBLE 으로 설정해 일정이 없는 날은 배경색을 하얗게 표기
         }
 
         tv_date.setText(String.valueOf(my_date_months.get(position).date));
@@ -195,6 +199,7 @@ public class MonthViewAdapter extends BaseAdapter {
                     break;
             }
         }
+        //아이템의 개수에 따라 텍스트 뷰의 높이도 다르게 설정 일정이 1개인 경우 날짜가 보이는 텍스트뷰와 크기를 절반씩 사용하며 나머지 텍스트뷰는 높이를 0으로 설정
         return convertView;
     }
 }

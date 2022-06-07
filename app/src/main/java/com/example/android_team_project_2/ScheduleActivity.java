@@ -1,36 +1,21 @@
 package com.example.android_team_project_2;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-
-import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.database.AbstractCursor;
 import android.database.Cursor;
-import android.location.Address;
-import android.location.Geocoder;
-import android.location.Location;
-import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.TimePicker;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -42,11 +27,12 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
     private MyDBHelper mDbHelper;
     Intent intent_load;
     Intent intent_save;
-    int key, sHour = 0, eHour = 0;
+    int key, sHour = 0, eHour = 1;
+    int sHour_check = -1, eHour_check = -1;
     int Position;
     String type;
-    private LatLng hansung = new LatLng(37.5822608, 127.0094254);
-    private MarkerOptions marker_hansung = new MarkerOptions().position(hansung);
+    private final LatLng hansung = new LatLng(37.5822608, 127.0094254);
+    private final MarkerOptions marker_hansung = new MarkerOptions().position(hansung);
     private Marker marker;
 
     @Override
@@ -69,6 +55,9 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
         EditText editPlace = (EditText) findViewById(R.id.editPlace);
         EditText editMemo = (EditText) findViewById(R.id.editMemo);
         editTitle.setHint(MainActivity.ClickPoint);
+        String[] title = String.valueOf(MainActivity.ClickPoint).split("[.]");
+        setTitle(title[0] + "년 " + title[1] + "월 " + title[2] + "일");
+        //액티비티 제목을 클릭한 날짜로 표기
 
         intent_save = new Intent(this, MainActivity.class);
 
@@ -82,10 +71,12 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
 
         else if(type.equals("week")) {
             Position = intent_load.getIntExtra("Week_Position", Integer.MAX_VALUE / 2);
-            intent_save.putExtra("Week_Position", Position + 1);
+            intent_save.putExtra("Week_Position", Position);
         }
+        //액티비티 실행할 때 받은 정보를 다시 메인액티비티로 전해줘야 하기 때문에 저장
 
         key = intent_load.getIntExtra("selected", -1);
+        //선택된 일정이 있는지 확인
 
         if (key != -1) {
             Cursor cursor = mDbHelper.getAllUsersByMethod();
@@ -99,52 +90,49 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
             timeStart.setHour(Integer.parseInt(cursor.getString(3)));
             timeStart.setMinute(0);
             sHour = Integer.parseInt(cursor.getString(3));
+            sHour_check = sHour;
             timeEnd.setHour(Integer.parseInt(cursor.getString(4)));
             timeEnd.setMinute(0);
             eHour = Integer.parseInt(cursor.getString(4));
+            eHour_check = eHour;
+
+            //일정의 제목과 위치 메모 시간을 불러와 화면에 표기 시간을 이용해 일정을 삭제하기 때문에 시간을 따로 저장
         }
 
         else {
             int time = intent_load.getIntExtra("time", 0);
-            timeStart.setHour(time);
             sHour = time;
-            timeStart.setMinute(0);
-            timeEnd.setHour(time + 1);
             eHour = time + 1;
+            timeStart.setHour(sHour);
+            timeStart.setMinute(0);
+            timeEnd.setHour(eHour);
             timeEnd.setMinute(0);
+            //일정을 선택하지 않은 월간달력의 경우 0시-1시 일정으로 시간을 표기
+            //일정을 선택하지 않았지만 주간달력의 경우 시간을 선택해 일정추가 액티비티를 실행하기 때문에 선택한 시간을 불러와 표기
         }
 
-        timeStart.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
-            @Override
-            public void onTimeChanged(TimePicker timePicker, int h, int m) {
-                sHour = h;
-                if (sHour <= 22)
-                    timeEnd.setHour(h + 1);
-                else if (sHour == 23)
-                    timeEnd.setHour(0);
-                timeEnd.setMinute(m);
-            }
+        timeStart.setOnTimeChangedListener((timePicker, h, m) -> {
+            sHour = h;
+            if (sHour <= 22)
+                timeEnd.setHour(h + 1);
+            else if (sHour == 23)
+                timeEnd.setHour(0);
+            timeEnd.setMinute(m);
+            //시작시간이 종료시간보다 늦어질 수 없게 작성
         });
 
-        timeEnd.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
-            @Override
-            public void onTimeChanged(TimePicker timePicker, int h, int m) {
-                eHour = h;
-                if (eHour >= 1)
-                    timeStart.setHour(h - 1);
-                else if (eHour == 0)
-                    timeStart.setHour(23);
-                timeEnd.setMinute(m);
-            }
+        timeEnd.setOnTimeChangedListener((timePicker, h, m) -> {
+            eHour = h;
+            if (eHour >= 1)
+                timeStart.setHour(h - 1);
+            else if (eHour == 0)
+                timeStart.setHour(23);
+            timeEnd.setMinute(m);
+            //위와 같음
         });
 
         Button cancel = (Button) findViewById(R.id.cancel);
-        cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        }); // 취소 버튼 클릭 시 액티비티를 종료
+        cancel.setOnClickListener(v -> finish()); // 취소 버튼 클릭 시 액티비티를 종료
     }
 
     @SuppressLint("Range")
@@ -154,12 +142,14 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
         Cursor cursor = mDbHelper.getAllUsersByMethod();
         if (key == -1) {
             defaultMapReady();
+            //선택한 일정이 없는 경우 한성대학교를 지도에 표기
             return;
         }
         cursor.moveToPosition(key);
 
-        if (Double.parseDouble(cursor.getString(6)) == 0.0 && Double.parseDouble(cursor.getString(6)) == 0.0) {
+        if (Double.parseDouble(cursor.getString(5)) == 0.0 && Double.parseDouble(cursor.getString(6)) == 0.0) {
             defaultMapReady();
+            //선택된 일정이 있지만 일정에 저장된 위치 정보가 초기상태인 0.0 / 0.0 일 경우 똑같이 한성대학교를 지도에 표기
             return;
         }
 
@@ -167,36 +157,38 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
 
         if (marker != null)
             marker.remove();
+        //기존에 있던 마커를 삭제
 
         mGoogleMap.addMarker(new MarkerOptions().position(location));
-        // move the camera
         mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
+        //선택한 일정의 위치에 마커를 생성 및 저장, 카메라 위치를 일정의 위치로 이동
     }
 
     public void defaultMapReady() {
         if (marker != null)
             marker.remove();
+        //기존에 있던 마커를 삭제
 
         marker = mGoogleMap.addMarker(marker_hansung);
-        // move the camera
         mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(hansung, 15));
     }
-
-    public void getAddress(View view) { // 주소를 검색하는 함수
+    //찾기 버튼 클릭시 실행
+    public void getAddress(View view) {
         EditText editText = (EditText) findViewById(R.id.editPlace);
         String[] Locate = editText.getText().toString().split("/");
 
         if (marker != null)
             marker.remove();
+        //기존에 있던 마커를 삭제
 
         LatLng location = new LatLng(Double.parseDouble(Locate[0]), Double.parseDouble(Locate[1]));
 
         marker = mGoogleMap.addMarker(new MarkerOptions().position(location));
-        // move the camera
         mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
+        //입력한 위치에 마커를 생성 및 저장, 입력한 위치로 카메라 이동
     }
-
-    public void insertRecord(View view) { // 저장 버튼을 누르면 해당 액티비티에 적힌 데이터를 SQL에 저장
+    //저장버튼 클릭시 실행
+    public void insertRecord(View view) {
         mDbHelper = new MyDBHelper(this);
         EditText editTitle = (EditText) findViewById(R.id.editTitle);
         EditText editPlace = (EditText) findViewById(R.id.editPlace);
@@ -205,14 +197,31 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
         String Memo = editMemo.getText().toString();
         String[] Place = editPlace.getText().toString().split("/");
 
+        if(sHour_check != -1 && eHour_check != -1) {
+            mDbHelper.delete(MainActivity.ClickPoint, sHour_check + "", eHour_check + "");
+            //기존의 일정을 클릭해 일정추가 액티비티를 실행했을 경우 기존의 일정을 삭제하고 저장하여 일정을 수정하는 방식으로 작성
+        }
+
         mDbHelper.insertUserByMethod(Title, MainActivity.ClickPoint, sHour + "", eHour + "", Place[0], Place[1], Memo);
         finish();
         startActivity(intent_save);
+        //제목, 날짜, 시간, 위치, 메모 저장후 종료 인텐트에 저장한 값을 전달해주며 메인액티비티 실행
     }
+    //삭제버튼 클릭시 실행
+    public void deleteRecord(View view) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-    public void deleteRecord(View view) { // 삭제 버튼을 누르면 해당 데이터에 적힌 데이터를 SQL에서 삭제
-        mDbHelper.delete(MainActivity.ClickPoint, sHour + "", eHour + "");
-        finish();
-        startActivity(intent_save);
+        builder.setTitle("Delete");
+        //다이얼로그 제목은 Delete로 표기
+        builder.setPositiveButton("OK", (dialog, id) -> {
+            mDbHelper.delete(MainActivity.ClickPoint, sHour + "", eHour + "");
+            finish();
+            startActivity(intent_save);
+            //OK버튼 클릭시 삭제 후 메인액티비티 실행
+        });
+        builder.setNegativeButton("Cancel", null);
+        //Cancel 클릭시 다이얼로그만 종료
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 }
