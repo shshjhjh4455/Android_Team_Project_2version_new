@@ -25,6 +25,7 @@ public class MonthViewAdapter extends BaseAdapter {
     private final ArrayList<My_date_month> my_date_months;
     private final Activity mActivity;
     private int check = 0;
+    private int year, month;
     MyDBHelper myDBHelper;
 
     public MonthViewAdapter(Context context, int Resource, ArrayList<My_date_month> dates, Activity activity) {
@@ -69,10 +70,13 @@ public class MonthViewAdapter extends BaseAdapter {
 
         Calendar calendar = Calendar.getInstance();
 
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH) + 1;
+        year = calendar.get(Calendar.YEAR);
+        month = calendar.get(Calendar.MONTH) + 1;
 
         calendar.set(year, month - 1 - MonthFragment.page, 1);
+
+        year = calendar.get(Calendar.YEAR);
+        month = calendar.get(Calendar.MONTH) + 1;
 
         myDBHelper = new MyDBHelper(convertView.getContext());
         Cursor cursor;
