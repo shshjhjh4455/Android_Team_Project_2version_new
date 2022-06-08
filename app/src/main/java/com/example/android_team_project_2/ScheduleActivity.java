@@ -6,7 +6,10 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.database.Cursor;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -20,7 +23,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.List;
+import java.util.Locale;
 
 public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCallback {
     private GoogleMap mGoogleMap = null;
@@ -173,19 +179,24 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
         mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(hansung, 15));
     }
     //찾기 버튼 클릭시 실행
-    public void getAddress(View view) {
-        EditText editText = (EditText) findViewById(R.id.editPlace);
-        String[] Locate = editText.getText().toString().split("/");
+    public void getAddress(View view) { // 주소를 검색하는 함수
+        EditText editText = (EditText)findViewById(R.id.editPlace);
+        String address = editText.getText().toString();
 
-        if (marker != null)
-            marker.remove();
-        //기존에 있던 마커를 삭제
+        try {
+            Geocoder geocoder = new Geocoder(this, Locale.KOREA);
+            List<Address> addresses = geocoder.getFromLocationName(address,1);
+            if (addresses.size() >0) {
+                Address bestResult = (Address) addresses.get(0);
+                LatLng location = new LatLng(bestResult.getLatitude(), bestResult.getLongitude());
+                mGoogleMap.addMarker(new MarkerOptions().position(location).title(address));
+                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
+            }
+        } catch (IOException e) {
+            Log.e(getClass().toString(),"Failed in using Geocoder.", e);
+            return;
+        }
 
-        LatLng location = new LatLng(Double.parseDouble(Locate[0]), Double.parseDouble(Locate[1]));
-
-        marker = mGoogleMap.addMarker(new MarkerOptions().position(location));
-        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
-        //입력한 위치에 마커를 생성 및 저장, 입력한 위치로 카메라 이동
     }
     //저장버튼 클릭시 실행
     public void insertRecord(View view) {
