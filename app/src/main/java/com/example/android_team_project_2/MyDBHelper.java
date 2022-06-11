@@ -29,15 +29,14 @@ public class MyDBHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public long insertUserByMethod(String title, String date, String s_time, String e_time, String place_x, String place_y, String memo) {
+    public long insertUserByMethod(String title, String date, String s_time, String e_time, String place, String memo) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(UserContract.Users.KEY_TITLE, title);
         values.put(UserContract.Users.KEY_DATE, date);
         values.put(UserContract.Users.KEY_START_TIME, s_time);
         values.put(UserContract.Users.KEY_END_TIME, e_time);
-        values.put(UserContract.Users.KEY_PLACE_X, place_x);
-        values.put(UserContract.Users.KEY_PLACE_Y, place_y);
+        values.put(UserContract.Users.KEY_PLACE, place);
         values.put(UserContract.Users.KEY_MEMO, memo);
 
         return db.insert(UserContract.Users.TABLE_NAME, null, values);
@@ -87,8 +86,7 @@ final class UserContract {
         public static final String KEY_DATE = "Date";
         public static final String KEY_START_TIME = "Start_time";
         public static final String KEY_END_TIME = "End_time";
-        public static final String KEY_PLACE_X = "Place_x";
-        public static final String KEY_PLACE_Y = "Place_y";
+        public static final String KEY_PLACE = "Place";
         public static final String KEY_MEMO = "Memo";
 
         public static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + " (" +
@@ -97,8 +95,7 @@ final class UserContract {
                 KEY_DATE + TEXT_TYPE + COMMA_SEP +
                 KEY_START_TIME + TEXT_TYPE + COMMA_SEP +
                 KEY_END_TIME + TEXT_TYPE + COMMA_SEP +
-                KEY_PLACE_X + TEXT_TYPE + COMMA_SEP +
-                KEY_PLACE_Y + TEXT_TYPE + COMMA_SEP +
+                KEY_PLACE + TEXT_TYPE + COMMA_SEP +
                 KEY_MEMO + TEXT_TYPE + " )";
         public static final String DELETE_TABLE = "DROP TABLE IF EXISTS " + TABLE_NAME;
     }

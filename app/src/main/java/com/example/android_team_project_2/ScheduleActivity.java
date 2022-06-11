@@ -90,8 +90,8 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
             cursor.moveToPosition(key);
 
             editTitle.setText(cursor.getString(1));
-            editPlace.setText(MessageFormat.format("{0}/{1}", cursor.getString(5), cursor.getString(6)));
-            editMemo.setText(cursor.getString(7));
+            editPlace.setText(cursor.getString(5));
+            editMemo.setText(cursor.getString(6));
 
             timeStart.setHour(Integer.parseInt(cursor.getString(3)));
             timeStart.setMinute(0);
@@ -101,7 +101,6 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
             timeEnd.setMinute(0);
             eHour = Integer.parseInt(cursor.getString(4));
             eHour_check = eHour;
-
             //일정의 제목과 위치 메모 시간을 불러와 화면에 표기 시간을 이용해 일정을 삭제하기 때문에 시간을 따로 저장
         }
 
@@ -152,52 +151,61 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
             return;
         }
         cursor.moveToPosition(key);
+        String address = cursor.getString(5);
 
-        if (Double.parseDouble(cursor.getString(5)) == 0.0 && Double.parseDouble(cursor.getString(6)) == 0.0) {
-            defaultMapReady();
-            //선택된 일정이 있지만 일정에 저장된 위치 정보가 초기상태인 0.0 / 0.0 일 경우 똑같이 한성대학교를 지도에 표기
-            return;
-        }
-
-        LatLng location = new LatLng(Double.parseDouble(cursor.getString(5)), Double.parseDouble(cursor.getString(6)));
-
-        if (marker != null)
-            marker.remove();
-        //기존에 있던 마커를 삭제
-
-        mGoogleMap.addMarker(new MarkerOptions().position(location));
-        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
-        //선택한 일정의 위치에 마커를 생성 및 저장, 카메라 위치를 일정의 위치로 이동
+        searchAddress(address);
     }
 
     public void defaultMapReady() {
         if (marker != null)
             marker.remove();
-        //기존에 있던 마커를 삭제
+            //기존에 있던 마커를 삭제
 
         marker = mGoogleMap.addMarker(marker_hansung);
         mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(hansung, 15));
     }
+
     //찾기 버튼 클릭시 실행
-    public void getAddress(View view) { // 주소를 검색하는 함수
+    public void getAddress(View view) {
         EditText editText = (EditText)findViewById(R.id.editPlace);
         String address = editText.getText().toString();
+        if(address.length() > 0)
+            searchAddress(address);
+        else
+            defaultMapReady();
+            //입력한 값이 없다면 초기값 한성대로 이동
+    }
 
+    //입력한 지명의 위치를 지도에 그리는 함수
+    public void searchAddress(String address) {
         try {
             Geocoder geocoder = new Geocoder(this, Locale.KOREA);
             List<Address> addresses = geocoder.getFromLocationName(address,1);
-            if (addresses.size() >0) {
-                Address bestResult = (Address) addresses.get(0);
-                LatLng location = new LatLng(bestResult.getLatitude(), bestResult.getLongitude());
-                mGoogleMap.addMarker(new MarkerOptions().position(location).title(address));
+            if (addresses.size() > 0) {
+                if (marker != null)
+                    marker.remove();
+                //입력한 지명의 위치로 이동할 때 기존에 있던 마커를 삭제
+
+                Address Location = (Address) addresses.get(0);
+                LatLng location = new LatLng(Location.getLatitude(), Location.getLongitude());
+                marker = mGoogleMap.addMarker(new MarkerOptions().position(location).title(address));
                 mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
+            }
+            else {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+                builder.setTitle("Wrong Address!");
+                //다이얼로그 제목은 Delete로 표기
+                builder.setPositiveButton("OK", null);
+                AlertDialog alertDialog = builder.create();
+                alertDialog.show();
             }
         } catch (IOException e) {
             Log.e(getClass().toString(),"Failed in using Geocoder.", e);
             return;
         }
-
     }
+
     //저장버튼 클릭시 실행
     public void insertRecord(View view) {
         mDbHelper = new MyDBHelper(this);
@@ -206,18 +214,23 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
         EditText editMemo = (EditText) findViewById(R.id.editMemo);
         String Title = editTitle.getText().toString();
         String Memo = editMemo.getText().toString();
-        String[] Place = editPlace.getText().toString().split("/");
+        String Place = editPlace.getText().toString();
+
+        if (Place.length() == 0)
+            Place = "hansung";
+            //위치의 변경이 없으면 초기값인 hansung으로 저장
 
         if(sHour_check != -1 && eHour_check != -1) {
-            mDbHelper.delete(MainActivity.ClickPoint, sHour_check + "", eHour_check + "");
+            mDbHelper.delete(MainActivity.ClickPoint,sHour_check + "", eHour_check + "");
             //기존의 일정을 클릭해 일정추가 액티비티를 실행했을 경우 기존의 일정을 삭제하고 저장하여 일정을 수정하는 방식으로 작성
         }
 
-        mDbHelper.insertUserByMethod(Title, MainActivity.ClickPoint, sHour + "", eHour + "", Place[0], Place[1], Memo);
+        mDbHelper.insertUserByMethod(Title, MainActivity.ClickPoint, sHour + "", eHour + "", Place, Memo);
         finish();
         startActivity(intent_save);
         //제목, 날짜, 시간, 위치, 메모 저장후 종료 인텐트에 저장한 값을 전달해주며 메인액티비티 실행
     }
+
     //삭제버튼 클릭시 실행
     public void deleteRecord(View view) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -225,7 +238,7 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
         builder.setTitle("Delete");
         //다이얼로그 제목은 Delete로 표기
         builder.setPositiveButton("OK", (dialog, id) -> {
-            mDbHelper.delete(MainActivity.ClickPoint, sHour + "", eHour + "");
+            mDbHelper.delete(MainActivity.ClickPoint,sHour + "", eHour + "");
             finish();
             startActivity(intent_save);
             //OK버튼 클릭시 삭제 후 메인액티비티 실행
