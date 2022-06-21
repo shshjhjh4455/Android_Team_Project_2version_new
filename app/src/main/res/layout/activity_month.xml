@@ -84,7 +84,7 @@
             android:layout_gravity="bottom|right|end"
             android:clickable="true"
             app:srcCompat="@android:drawable/ic_input_add"
-            android:onClick="fClick"
+            android:onClick="floating_Click"
             />
 
         <androidx.viewpager2.widget.ViewPager2

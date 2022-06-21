@@ -25,7 +25,6 @@ public class MonthViewAdapter extends BaseAdapter {
     private final ArrayList<My_date_month> my_date_months;
     private final Activity mActivity;
     private int check = 0;
-    private int year, month;
     MyDBHelper myDBHelper;
 
     public MonthViewAdapter(Context context, int Resource, ArrayList<My_date_month> dates, Activity activity) {
@@ -70,8 +69,8 @@ public class MonthViewAdapter extends BaseAdapter {
 
         Calendar calendar = Calendar.getInstance();
 
-        year = calendar.get(Calendar.YEAR);
-        month = calendar.get(Calendar.MONTH) + 1;
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH) + 1;
 
         calendar.set(year, month - 1 - MonthFragment.page, 1);
 
@@ -89,7 +88,6 @@ public class MonthViewAdapter extends BaseAdapter {
             if (check == 0)
                 break;
             //check == 0인 경우는 해당 월이 아닌 이전달과 다음달의 정보를 보여주는 것이기에 break
-
             String Date = cursor.getString(2);
             if (Date.equals(year + "." + month + "." + my_date_months.get(position).date)) {
                 if (cursorc == 0) {

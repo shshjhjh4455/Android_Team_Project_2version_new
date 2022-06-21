@@ -3,7 +3,6 @@ package com.example.android_team_project_2;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
@@ -29,7 +28,7 @@ public class MyDBHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public long insertUserByMethod(String title, String date, String s_time, String e_time, String place, String memo) {
+    public void insert(String title, String date, String s_time, String e_time, String place, String memo) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(UserContract.Users.KEY_TITLE, title);
@@ -39,7 +38,7 @@ public class MyDBHelper extends SQLiteOpenHelper {
         values.put(UserContract.Users.KEY_PLACE, place);
         values.put(UserContract.Users.KEY_MEMO, memo);
 
-        return db.insert(UserContract.Users.TABLE_NAME, null, values);
+        db.insert(UserContract.Users.TABLE_NAME, null, values);
     }
 
     public Cursor getAllUsersByMethod() {
@@ -57,14 +56,11 @@ public class MyDBHelper extends SQLiteOpenHelper {
     }
 
     public Cursor searchMonth(String searchDate) {
-        StringBuffer sb = new StringBuffer();
-        sb.append(" SELECT * FROM Users WHERE Date LIKE ?");
 
         SQLiteDatabase db = getReadableDatabase();
         String[] params = {searchDate + "%"};
-        Cursor cursor = db.rawQuery(sb.toString(), params);
 
-        return cursor;
+        return db.rawQuery(" SELECT * FROM Users WHERE Date LIKE ?", params);
     }
 }
 

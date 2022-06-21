@@ -24,7 +24,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
 
@@ -146,7 +145,7 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
         mGoogleMap = googleMap;
         Cursor cursor = mDbHelper.getAllUsersByMethod();
         if (key == -1) {
-            defaultMapReady();
+            defaultAddress();
             //선택한 일정이 없는 경우 한성대학교를 지도에 표기
             return;
         }
@@ -156,15 +155,6 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
         searchAddress(address);
     }
 
-    public void defaultMapReady() {
-        if (marker != null)
-            marker.remove();
-            //기존에 있던 마커를 삭제
-
-        marker = mGoogleMap.addMarker(marker_hansung);
-        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(hansung, 15));
-    }
-
     //찾기 버튼 클릭시 실행
     public void getAddress(View view) {
         EditText editText = (EditText)findViewById(R.id.editPlace);
@@ -172,8 +162,17 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
         if(address.length() > 0)
             searchAddress(address);
         else
-            defaultMapReady();
+            defaultAddress();
             //입력한 값이 없다면 초기값 한성대로 이동
+    }
+
+    //지도의 초기 위치 한성대로 이동하는 함수
+    public void defaultAddress() {
+        if (marker != null)
+            marker.remove();
+        //기존에 있던 마커를 삭제
+        marker = mGoogleMap.addMarker(marker_hansung);
+        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(hansung, 15));
     }
 
     //입력한 지명의 위치를 지도에 그리는 함수
@@ -202,7 +201,6 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
             }
         } catch (IOException e) {
             Log.e(getClass().toString(),"Failed in using Geocoder.", e);
-            return;
         }
     }
 
@@ -225,7 +223,7 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
             //기존의 일정을 클릭해 일정추가 액티비티를 실행했을 경우 기존의 일정을 삭제하고 저장하여 일정을 수정하는 방식으로 작성
         }
 
-        mDbHelper.insertUserByMethod(Title, MainActivity.ClickPoint, sHour + "", eHour + "", Place, Memo);
+        mDbHelper.insert(Title, MainActivity.ClickPoint, sHour + "", eHour + "", Place, Memo);
         finish();
         startActivity(intent_save);
         //제목, 날짜, 시간, 위치, 메모 저장후 종료 인텐트에 저장한 값을 전달해주며 메인액티비티 실행

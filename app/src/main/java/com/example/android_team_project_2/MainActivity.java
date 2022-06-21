@@ -213,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("NonConstantResourceId")
     //일정추가 메뉴 클릭시 실행
-    public void fClick(View view) {
+    public void floating_Click(View view) {
         myDBHelper = new MyDBHelper(this);
         CursorPoint = new int[300];
         switch (view.getId()) {
@@ -329,10 +329,10 @@ public class MainActivity extends AppCompatActivity {
                     time_count ++;
                 }
 
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle(ClickPoint);
                 if (time_key != 0) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
                     //다이얼로그 생성
-                    builder.setTitle(ClickPoint);
                     //타이틀은 클릭한 날짜로 설정
                     builder.setItems(CursorTime, (dialog, pos) -> {
                         intent_week.putExtra("selected", intent_time[0]);
@@ -348,12 +348,8 @@ public class MainActivity extends AppCompatActivity {
                     AlertDialog alertDialog = builder.create();
                     alertDialog.show();
                     //다이얼로그 생성 후 화면에 출력
-                }
-
-                else {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                } else {
                     //다이얼로그 생성
-                    builder.setTitle(ClickPoint);
                     //타이틀은 클릭한 날짜로 설정
                     builder.setPositiveButton("NEW", (dialog, id) -> startActivity(intent_week));
                     builder.setNegativeButton("Cancel", null);
